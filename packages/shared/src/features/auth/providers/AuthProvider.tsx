@@ -3,13 +3,14 @@ import {
   ReactNode,
   createContext,
   useContext,
+  useEffect,
   useState,
 } from "react";
 import { User } from "../types/User";
 import { SignInFormValues } from "..";
 
 export type AuthContextValues = {
-  user: User | undefined;
+  user: User | undefined | null;
   login: (
     values: SignInFormValues
   ) => Promise<void | { errors: { root: string } }>;
@@ -24,7 +25,7 @@ export const AuthProvider = ({
 }: {
   children: ReactNode;
 }): ReactElement | null => {
-  const [user, setUser] = useState<User | undefined>(undefined);
+  const [user, setUser] = useState<User | undefined | null>(undefined);
   const [isLoading, setLoading] = useState<boolean>(false);
 
   const login = async (values: SignInFormValues) => {
@@ -34,6 +35,8 @@ export const AuthProvider = ({
         `https://jsonplaceholder.typicode.com/users?email=${values.email}`
       ).then(async (res) => await res.json())) as User[];
       if (users.length) {
+        if (window?.localStorage)
+          localStorage.setItem("user", JSON.stringify(users[0]));
         return setUser(users[0]);
       }
       return {
@@ -49,8 +52,23 @@ export const AuthProvider = ({
   };
 
   const logout = () => {
-    setUser(undefined);
+    setUser(null);
   };
+
+  // persist user in web with localstorage, must be replace with real auth system based on cookies with JWT in real worl app
+  useEffect(() => {
+    if (window?.localStorage)
+      setUser((oldUser) => {
+        if (oldUser) return oldUser;
+
+        const savedUser = localStorage.getItem("user");
+        if (savedUser) {
+          return JSON.parse(savedUser);
+        }
+
+        return null;
+      });
+  }, [setUser]);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>

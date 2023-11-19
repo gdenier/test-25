@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { AuthProvider } from "shared";
+import { AuthProvider, QueryProvider } from "shared";
 import { theme } from "../theme";
 import { DripsyProvider } from "dripsy";
 
@@ -62,10 +62,15 @@ function RootLayoutNav() {
             value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
           >
             <AuthProvider>
-              <Stack>
-                <Stack.Screen name="(app)" options={{ headerShown: true }} />
-                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              </Stack>
+              <QueryProvider>
+                <Stack>
+                  <Stack.Screen name="(app)" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="(auth)"
+                    options={{ headerShown: false }}
+                  />
+                </Stack>
+              </QueryProvider>
             </AuthProvider>
           </ThemeProvider>
         </SafeAreaProvider>
